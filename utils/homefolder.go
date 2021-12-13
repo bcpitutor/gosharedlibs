@@ -1,4 +1,4 @@
-package gosharedlibs
+package utils
 
 import (
 	"errors"
