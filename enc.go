@@ -37,7 +37,6 @@ func EncryptToken(t string, k string) string {
 	}
 
 	result := gcm.Seal(nonce, nonce, token, nil)
-	// fmt.Printf("Enc Result: %s\n", string(result))
 
 	return string(result)
 }
@@ -47,7 +46,7 @@ func DecryptToken(data []byte, key []byte) string {
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(-1) // TODO: might not exit
+		return ""
 	}
 
 	gcm, err := cipher.NewGCM(c)
@@ -55,10 +54,7 @@ func DecryptToken(data []byte, key []byte) string {
 		fmt.Println(err)
 	}
 
-	// ioutil.ReadFile()x
-
 	nonceSize := gcm.NonceSize()
-
 	if len(data) < nonceSize {
 		fmt.Println(err)
 	}
@@ -68,22 +64,19 @@ func DecryptToken(data []byte, key []byte) string {
 	if err != nil {
 		fmt.Println(err)
 	}
-	// fmt.Println(string(plaintext))
 
 	return string(plaintext)
 }
 
 func DumpEncryptedToken(encryptedData []byte) {
-	// TODO: Check if $HOME/.ticketool directory exists and there is priv/pub key pair
-	//  If not, create one
-
-	// fmt.Printf("%+v\n", encryptedData)
-	// fmt.Printf("%+v\n", string(encryptedData))
-
-	outdirpath := fmt.Sprintf("%s%s", os.Getenv("HOME"), "/.tikiool")
+	homeFolder, err := HomeFolder()
+	if err != nil {
+		return
+	}
+	outdirpath := fmt.Sprintf("%s/%s", homeFolder, ".tikitool")
 
 	fMode := fs.FileMode(uint32(0700))
-	err := os.MkdirAll(outdirpath, fs.FileMode(fMode))
+	err = os.MkdirAll(outdirpath, fs.FileMode(fMode))
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -106,8 +99,12 @@ func DumpEncryptedToken(encryptedData []byte) {
 }
 
 func ExportEncryptedToken() ([]byte, error) {
-	//fmt.Println("Existing token is processing...")
-	outdirpath := fmt.Sprintf("%s%s", os.Getenv("HOME"), "/.ticketool")
+	homeFolder, err := HomeFolder()
+	if err != nil {
+		return nil, err
+	}
+
+	outdirpath := fmt.Sprintf("%s%s", homeFolder, "/.ticketool")
 	filename := "ticketool.token"
 	fPath := filepath.Join(outdirpath, filename)
 
