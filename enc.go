@@ -19,20 +19,20 @@ func EncryptToken(t string, k string) string {
 
 	c, err := aes.NewCipher(key)
 	if err != nil {
-		fmt.Println("Encrption error.")
+		fmt.Println("1. Encryption error.")
 		os.Exit(-12)
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		fmt.Println("Encrption error.")
+		fmt.Println("2. Encryption error.")
 		os.Exit(-14)
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		fmt.Println("Encrption error.")
+		fmt.Println("3. Encryption error.")
 		os.Exit(-15)
 	}
 
