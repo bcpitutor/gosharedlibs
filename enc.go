@@ -103,7 +103,7 @@ func ExportEncryptedToken() ([]byte, error) {
 		return nil, err
 	}
 
-	outdirpath := fmt.Sprintf("%s/%s", homeFolder, ".ticketool")
+	outdirpath := fmt.Sprintf("%s/%s", homeFolder, ".tikitool")
 	fPath := filepath.Join(outdirpath, TokenFile)
 
 	tokeEncyptedData, err := ioutil.ReadFile(fPath)
