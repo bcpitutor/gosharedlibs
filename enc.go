@@ -12,90 +12,89 @@ import (
 	"path/filepath"
 )
 
-func EncryptToken(t string, k string) string {
+const (
+	TokenFile = "ticketool.token"
+)
 
+func EncryptToken(t string, k string) (string, error) {
 	token := []byte(t)
 	key := []byte(k)
 
 	c, err := aes.NewCipher(key)
 	if err != nil {
-		fmt.Println("1. Encryption error.")
-		os.Exit(-12)
+		return "", err
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		fmt.Println("2. Encryption error.")
-		os.Exit(-14)
+		return "", err
 	}
 
 	nonce := make([]byte, gcm.NonceSize())
 
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		fmt.Println("3. Encryption error.")
-		os.Exit(-15)
+		return "", err
 	}
 
 	result := gcm.Seal(nonce, nonce, token, nil)
 
-	return string(result)
+	return string(result), nil
 }
 
-func DecryptToken(data []byte, key []byte) string {
+func DecryptToken(data []byte, key []byte) (string, error) {
 
 	c, err := aes.NewCipher(key)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		return "", err
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		fmt.Println(err)
+		return "", err
 	}
 
 	nonceSize := gcm.NonceSize()
 	if len(data) < nonceSize {
-		fmt.Println(err)
+		return "", err
 	}
 
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		fmt.Println(err)
+		return "", err
 	}
 
-	return string(plaintext)
+	return string(plaintext), nil
 }
 
-func DumpEncryptedToken(encryptedData []byte) {
+func DumpEncryptedToken(encryptedData []byte) error {
 	homeFolder, err := HomeFolder()
 	if err != nil {
-		return
+		return err
 	}
 	outdirpath := fmt.Sprintf("%s/%s", homeFolder, ".tikitool")
 
 	fMode := fs.FileMode(uint32(0700))
 	err = os.MkdirAll(outdirpath, fs.FileMode(fMode))
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
-	filename := "ticketool.token"
-	fPath := filepath.Join(outdirpath, filename)
+	fPath := filepath.Join(outdirpath, TokenFile)
 
-	fiLE, err := os.Create(fPath)
+	f, err := os.Create(fPath)
 	if err != nil {
-		fmt.Printf("File creation error : %s", err)
+		return err
 	}
 
-	if _, err := fiLE.Write(encryptedData); err != nil {
-		fmt.Printf("File writing error")
+	if _, err := f.Write(encryptedData); err != nil {
+		return err
 	}
 
-	if err := fiLE.Close(); err != nil {
-		fmt.Printf("File couldn't close properly.")
+	if err := f.Close(); err != nil {
+		return err
 	}
 
+	return nil
 }
 
 func ExportEncryptedToken() ([]byte, error) {
@@ -104,13 +103,12 @@ func ExportEncryptedToken() ([]byte, error) {
 		return nil, err
 	}
 
-	outdirpath := fmt.Sprintf("%s%s", homeFolder, "/.ticketool")
-	filename := "ticketool.token"
-	fPath := filepath.Join(outdirpath, filename)
+	outdirpath := fmt.Sprintf("%s/%s", homeFolder, ".ticketool")
+	fPath := filepath.Join(outdirpath, TokenFile)
 
 	tokeEncyptedData, err := ioutil.ReadFile(fPath)
 	if err != nil {
-		fmt.Printf("File read error: %+v \n", err)
+		return nil, err
 	}
 
 	return tokeEncyptedData, nil
