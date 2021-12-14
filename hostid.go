@@ -7,7 +7,7 @@ import (
 func GetMachineId() (string, error) {
 	id, err := machineid.ID()
 	if err != nil {
-		return "", err
+		return "unavailable", err
 	}
 	return id, nil
 }
@@ -15,8 +15,7 @@ func GetMachineId() (string, error) {
 func GetAppKey(appName string) (string, error) {
 	id, err := machineid.ProtectedID(appName)
 	if err != nil {
-		return "", err
+		return "unavailable", err
 	}
-
 	return id, nil
 }
