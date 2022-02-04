@@ -97,19 +97,19 @@ func (h *CadenceHelper) SetupServiceConfig() {
 	configData, err := ioutil.ReadFile(h.configFile)
 	if err != nil {
 		// panic(fmt.Sprintf("Failed to log config file: %v, Error: %v", defaultConfigFile, err))
-		fmt.Printf("Failed to log config file: %v, Error: %v", defaultConfigFile, err)
-
+		fmt.Printf("Failed to log config file: %v, Error: %v\n", defaultConfigFile, err)
+		fmt.Printf("\nLocal env searching...\n")
 	}
 
 	if err := yaml.Unmarshal(configData, &h.Config); err != nil {
 		// panic(fmt.Sprintf("Error initializing configuration: %v", err))
-		fmt.Printf("Local env searching...")
+		fmt.Println("WARN: unmarshall error on the config file")
 	}
 
 	//
 	// bypassing config file and get config items if it is exist as a shell variables.
 	if os.Getenv("CAD_DOMAINNAME") != "" || os.Getenv("CAD_DOMAINNAME") != " " {
-		h.Config.DomainName = os.Getenv("CAD_HOSTNAME")
+		h.Config.DomainName = os.Getenv("CAD_DOMAINNAME")
 	}
 
 	if os.Getenv("CAD_HOSTANDPORT") != "" || os.Getenv("CAD_HOSTANDPORT") != " " {
@@ -120,8 +120,9 @@ func (h *CadenceHelper) SetupServiceConfig() {
 		h.Config.ServiceName = os.Getenv("CAD_SERVICENAME")
 	}
 
-	if os.Getenv("CAD_DOMAINNAME") != "" || os.Getenv("CAD_DOMAINNAME") != " " || os.Getenv("CAD_HOSTANDPORT") != "" || os.Getenv("CAD_HOSTANDPORT") != " " || os.Getenv("CAD_SERVICENAME") != "" || os.Getenv("CAD_SERVICENAME") != " " {
-		panic(fmt.Sprintln("Failed to initialize cadence service, domain, host and/or port. Please, check you configuration file or shell environment"))
+	if h.Config.DomainName == "" || h.Config.HostNameAndPort == "" || h.Config.ServiceName == "" {
+		fmt.Printf("Configuration Error: Set your config/development.yaml or shell variables\nCAD_DOMAINNAME:%s\nCAD_SERVICENAME=%s\nCAD_HOSTANDPORT=%s\n\n", h.Config.DomainName, h.Config.ServiceName, h.Config.HostNameAndPort)
+		panic("Check your configuration")
 	}
 
 	// Initialize logger for running samples
