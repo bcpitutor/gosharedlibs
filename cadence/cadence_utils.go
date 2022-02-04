@@ -117,7 +117,7 @@ func (h *CadenceHelper) SetupServiceConfig() {
 	}
 
 	if os.Getenv("CAD_SERVICENAME") != "" || os.Getenv("CAD_SERVICENAME") != " " {
-		h.Config.HostNameAndPort = os.Getenv("CAD_SERVICENAME")
+		h.Config.ServiceName = os.Getenv("CAD_SERVICENAME")
 	}
 
 	if os.Getenv("CAD_DOMAINNAME") != "" || os.Getenv("CAD_DOMAINNAME") != " " || os.Getenv("CAD_HOSTANDPORT") != "" || os.Getenv("CAD_HOSTANDPORT") != " " || os.Getenv("CAD_SERVICENAME") != "" || os.Getenv("CAD_SERVICENAME") != " " {
