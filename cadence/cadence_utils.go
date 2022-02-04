@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/opentracing/opentracing-go"
@@ -95,11 +96,32 @@ func (h *CadenceHelper) SetupServiceConfig() {
 	// Initialize developer config for running samples
 	configData, err := ioutil.ReadFile(h.configFile)
 	if err != nil {
-		panic(fmt.Sprintf("Failed to log config file: %v, Error: %v", defaultConfigFile, err))
+		// panic(fmt.Sprintf("Failed to log config file: %v, Error: %v", defaultConfigFile, err))
+		fmt.Printf("Failed to log config file: %v, Error: %v", defaultConfigFile, err)
+
 	}
 
 	if err := yaml.Unmarshal(configData, &h.Config); err != nil {
-		panic(fmt.Sprintf("Error initializing configuration: %v", err))
+		// panic(fmt.Sprintf("Error initializing configuration: %v", err))
+		fmt.Printf("Local env searching...")
+	}
+
+	//
+	// bypassing config file and get config items if it is exist as a shell variables.
+	if os.Getenv("CAD_DOMAINNAME") != "" || os.Getenv("CAD_DOMAINNAME") != " " {
+		h.Config.DomainName = os.Getenv("CAD_HOSTNAME")
+	}
+
+	if os.Getenv("CAD_HOSTANDPORT") != "" || os.Getenv("CAD_HOSTANDPORT") != " " {
+		h.Config.HostNameAndPort = os.Getenv("CAD_HOSTANDPORT")
+	}
+
+	if os.Getenv("CAD_SERVICENAME") != "" || os.Getenv("CAD_SERVICENAME") != " " {
+		h.Config.HostNameAndPort = os.Getenv("CAD_SERVICENAME")
+	}
+
+	if os.Getenv("CAD_DOMAINNAME") != "" || os.Getenv("CAD_DOMAINNAME") != " " || os.Getenv("CAD_HOSTANDPORT") != "" || os.Getenv("CAD_HOSTANDPORT") != " " || os.Getenv("CAD_SERVICENAME") != "" || os.Getenv("CAD_SERVICENAME") != " " {
+		panic(fmt.Sprintln("Failed to initialize cadence service, domain, host and/or port. Please, check you configuration file or shell environment"))
 	}
 
 	// Initialize logger for running samples
@@ -109,6 +131,7 @@ func (h *CadenceHelper) SetupServiceConfig() {
 	}
 
 	logger.Info("Logger created.")
+
 	h.Logger = logger
 	h.ServiceMetricScope = tally.NoopScope
 	h.WorkerMetricScope = tally.NoopScope
